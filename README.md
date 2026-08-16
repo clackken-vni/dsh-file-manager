@@ -40,7 +40,7 @@ dsh plugin --profile web add dsh-file-manager
 
 ```
 dsh-file-manager/
-├── package.json          # dual-face: dsh.bundle.patch + dsh.client (platform web)
+├── package.json          # dual-face: exports "./client" (web client) + cordis.patch.yml (host bundle)
 ├── cordis.patch.yml      # - insert: [{id: file-manager, name: dsh-file-manager}]
 ├── lib/
 │   ├── index.js          # HOST HALF (prebuilt) — /plugins/file-manager/* routes

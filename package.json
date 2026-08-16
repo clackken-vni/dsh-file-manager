@@ -42,18 +42,6 @@
   "engines": {
     "node": ">=18"
   },
-  "dsh": {
-    "bundle": {
-      "patch": "./cordis.patch.yml"
-    },
-    "client": {
-      "inject": [
-        "@deepseek-ai/dsh-client-locale",
-        "@deepseek-ai/dsh-client-runtime"
-      ],
-      "platform": "web"
-    }
-  },
   "peerDependencies": {
     "@deepseek-ai/cordis": "^4.0.1-rc.1",
     "@deepseek-ai/dsh-client-locale": "^0.0.1-rc.1",
