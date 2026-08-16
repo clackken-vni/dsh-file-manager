@@ -2,9 +2,8 @@
 # host composition of a dsh profile. The host half registers the
 # /plugins/file-manager/* HTTP routes (list / search / read / write / rename /
 # delete / mkdir / touch / open / reveal / open-vscode); the web client
-# (the package's `./client` entry) renders the right-side resizable
-# file-manager panel in shell.overlay with a right-click context menu on
-# file/folder rows.
+# (dsh.client entry) renders the right-side resizable file-manager panel in
+# shell.overlay with a right-click context menu on file/folder rows.
 #
 # Install: `dsh plugin --profile <name> add <this package>` (npm or a local
 # path). The `dsh plugin` command pnpm-installs the package into the profile
