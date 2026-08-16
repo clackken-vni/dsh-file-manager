@@ -1,54 +1,78 @@
 # dsh-file-manager
 
-**File Manager cho DeepSeek Harness** — bảng file/thư mục bên phải trang (có thể kéo đổi độ rộng), tìm kiếm tên file đệ quy, preview nội dung (Markdown + syntax highlight), chỉnh sửa inline, và **context-menu (bấm chuột phải)** trên file/folder gồm: Preview / Edit / Copy path / Rename / New file / New folder / Delete / Open with app / Reveal in Finder / Open in VS Code.
+**A File Manager for DeepSeek Harness.** Adds a resizable file/folder panel on the right side of the page with recursive filename search, per-type preview, inline editing, and a full right-click context menu for files and folders.
 
-Plugin là **dual-face** (host + client) và cài được qua `dsh plugin add` — không cần sửa repo, không đụng RPC đóng.
-Host half đăng ký các route `/plugins/file-manager/*` trên `ctx.webServer`; client half fetch trực tiếp các route này từ trang origin.
+Docs in other languages: [Tiếng Việt](README.vi.md)
 
-## Tính năng
+## Highlights
 
-- **Cây file/folder** bên phải, mở rộng/collapse từng thư mục (lazy-load), thư mục xếp trước file, hiển thị kích thước.
-- **Tìm kiếm tên** đệ quy trong workspace (bỏ qua `.git`/`node_modules`/`dist`/`.dsh`, giới hạn kết quả).
-- **Right-click context menu** trên bất kỳ file/folder nào:
-  - File: `Preview`, `Edit`, `Copy path`, `Rename…`, `Delete`, `Open with app`, `Reveal in Finder`, `Open in VS Code`
-  - Folder: `Expand/Collapse`, `Copy path`, `Rename…`, `New file`, `New folder`, `Delete`, `Open with app`, `Reveal in Finder`
-- **Preview**: Markdown render (heading, list, code fence, blockquote, bảng, ảnh, link) + text/source hiển thị kèm syntax highlight cơ bản; chặn file > 1 MB.
-- **Edit inline** rồi Save, ghi ngược về đĩa.
-- Gắn nút toggle trên header của session và panel `shell.overlay`.
+- **Dual-face plugin** — works as both a DSH host plugin and a web client. Installable via `dsh plugin add` with no repo edits and no changes to closed RPCs.
+  - Host half registers the `/plugins/file-manager/*` routes on `ctx.webServer`.
+  - Client half fetches those routes directly (same origin).
+- **File tree** on the right side — lazy-load expand/collapse per folder, directories before files, size shown, sortable (Name / Type / Size / Modified).
+- **Recursive filename search** across the whole workspace (skips `.git`, `node_modules`, `dist`, `.dsh`; caps results).
+- **Right-click context menu** on any file/folder.
+- **Per-type preview** — renders each file the right way:
+  - Markdown → markdown rendering
+  - HTML / SVG → sandboxed in-browser iframe
+  - PDF → embedded browser viewer
+  - Images → inline image
+  - Audio / Video → native media player with controls
+  - Text / code → syntax highlighting
+- **Inline edit** then Save back to disk.
+- **20 color themes** → 10 dark + 10 light, plus per-file-type icons.
+- **Breadcrumb navigation**, **prev/next** quick file switching in preview, **rubber-band drag-select**, keyboard shortcuts.
 
-## Cấu trúc
+## Installation
+
+```sh
+# From a local folder or an npm package:
+dsh plugin --profile web add /path/to/dsh-file-manager
+# or from npm:
+dsh plugin --profile web add dsh-file-manager
+```
+
+`dsh plugin add` pnpm-installs the package into the profile and reconciles it into the profile's bundle list. Restart the harness for it to take effect.
+
+> **Requires** VS Code `code` on PATH for "Open in VS Code"; if missing, that item reports an error but everything else still works.
+
+## Structure
 
 ```
 dsh-file-manager/
 ├── package.json          # dual-face: dsh.bundle.patch + dsh.client (platform web)
 ├── cordis.patch.yml      # - insert: [{id: file-manager, name: dsh-file-manager}]
 ├── lib/
-│   ├── index.js          # HOST HALF (prebuilt) — đăng ký /plugins/file-manager/* routes
+│   ├── index.js          # HOST HALF (prebuilt) — /plugins/file-manager/* routes
 │   └── client.js         # CLIENT HALF (prebuilt bundle) — __ModuleLoader__.load + React
 └── README.md
 ```
 
 ### Host half (`lib/index.js`)
-`inject: ['fs']`. Đăng ký các route (tốt nhất qua `ctx.get('webServer') ?? ctx.get('httpServer')`):
 
-| Route | Method | Mô tả |
+`inject: ['fs']`. Registers routes (preferably via `ctx.get('webServer') ?? ctx.get('httpServer')`):
+
+| Route | Method | Description |
 |---|---|---|
-| `/plugins/file-manager/list` | GET `?path=` | Liệt kê file+thư mục một cấp, sắp xếp |
-| `/plugins/file-manager/search` | GET `?root=&q=` | Tìm tên đệ quy, skip thư mục dày |
-| `/plugins/file-manager/read` | GET `?path=` | Đọc text (giới hạn 1 MB) |
-| `/plugins/file-manager/write` | POST | Ghi/create-or-replace file |
-| `/plugins/file-manager/rename` | POST | Đổi tên / move |
-| `/plugins/file-manager/delete` | POST | Xoá file/thư mục đệ quy |
-| `/plugins/file-manager/mkdir` | POST | Tạo thư mục |
-| `/plugins/file-manager/touch` | POST | Tạo file rỗng |
-| `/plugins/file-manager/open` | POST | Mở bằng app mặc định OS |
-| `/plugins/file-manager/reveal` | POST | Mở thư mục cha bằng app OS |
-| `/plugins/file-manager/open-vscode` | POST | Mở bằng VS Code (`code`) |
+| `/plugins/file-manager/list` | GET `?path=` | List one directory level, sorted |
+| `/plugins/file-manager/search` | GET `?root=&q=` | Recursive filename search, skips dense dirs |
+| `/plugins/file-manager/read` | GET `?path=` | Read text (up to 1 MB) |
+| `/plugins/file-manager/raw` | GET `?path=` | Stream arbitrary binary with correct MIME (pdf/html/image/video/audio) |
+| `/plugins/file-manager/download` | GET `?path=` | Download as attachment |
+| `/plugins/file-manager/write` | POST | Create-or-replace a file |
+| `/plugins/file-manager/rename` | POST | Rename / move |
+| `/plugins/file-manager/delete` | POST | Recursive delete file/folder |
+| `/plugins/file-manager/mkdir` | POST | Create directory |
+| `/plugins/file-manager/touch` | POST | Create empty file |
+| `/plugins/file-manager/open` | POST | Open with the default OS app |
+| `/plugins/file-manager/reveal` | POST | Reveal in the parent folder (OS app) |
+| `/plugins/file-manager/open-vscode` | POST | Open in VS Code (`code`) |
 
-Đọc/ghi đi qua `ctx.fs` (respect provider/sandbox); rename/delete/mkdir/touch/open là cấu trúc `ctx.fs` chủ tâm không cung cấp nên dùng `node:fs` trên chính path host sở hữu (client không tự ghép path segments).
+Reads/writes go through `ctx.fs` (respects the provider/sandbox). Rename/delete/mkdir/touch/open are operations `ctx.fs` intentionally does not expose, so they use `node:fs` on paths the host owns (the client never joins path segments itself).
 
 ### Client half (`lib/client.js`)
-Bundle prebuilt theo contract `window.__ModuleLoader__.load({id, factory})`, `require('react')`, dùng `createElement` (không JSX), tự inject CSS. Đăng ký:
+
+Prebuilt bundle following the contract `window.__ModuleLoader__.load({id, factory})`, `require('react')`, `createElement` (no JSX), and self-injected CSS. Registers:
 
 ```js
 slots.inject('shell.overlay', () => slots.register(
@@ -61,31 +85,25 @@ slots.inject('conversation.session.header.actions', () => slots.register(
 ));
 ```
 
-Root được suy ra từ active workspace qua `props.useWorkspaces` / `props.useSessions` (framework hooks); re-root khi đổi workspace.
+The root is derived from the active workspace via the framework hooks (`props.useWorkspaces` / `props.useSessions`) and re-roots when the workspace changes.
 
-## Cài đặt & chạy
+## Context menu
 
-Từ thư mục chứa `package.json` (hoặc npm package) dùng lệnh:
+- **File:** Preview · Edit · Copy path · Download · Rename… · Delete · Open with app · Reveal in Finder · Open in VS Code
+- **Folder:** Expand/Collapse · Copy path · Rename… · New file · New folder · Delete · Open with app · Reveal in Finder
 
-```sh
-# Cài từ đường dẫn thư mục local
-dsh plugin --profile web add /path/to/dsh-file-manager
+## Customization
 
-# hoặc nếu đăng npm
-dsh plugin --profile web add dsh-file-manager
-```
+- **Lock the workspace root:** the host half always takes a path from the client (client picks root = workspace). To enforce a deployment-wide root, add a `mountRoot` config to the host half and gate paths against it.
+- **Add more preview formats:** extend the type dispatch in `lib/client.js`.
+- **Rebuild the client:** `lib/client.js` is currently a hand-authored prebuilt bundle. To build from TSX with the DSH pipeline, follow `packages/client/tsdown.client.ts` (`clientBundle(...)`) and export `./client` => `lib/client.js`.
 
-Lệnh `dsh plugin add` sẽ pnpm-install gói vào profile và nạp bundle `dsh.profile.bundles`. Khởi động lại harness để có hiệu lực.
+## Security
 
-> **Cần** VS Code `code` trên PATH cho "Open in VS Code"; nếu không có, mục này báo lỗi nhưng các tính năng khác vẫn dùng được.
+- The client only fetches the `/plugins/file-manager/*` routes from the origin `/` (the web server it was loaded from). The host half trusts the same connection fence as the GUI.
+- This is **not** intent-safe. The plugin runs with the privileges of the `dsh` process. Only install it in deployments you trust; exposing it remotely (`--host`) is discouraged because of the shared RCE surface.
+- Dense/generated directories (`node_modules`, `dist`, `.git`) are skipped during search to avoid hangs on huge trees.
 
-## Tuỳ biến / nâng cấp
+## License
 
-- **Đổi phạm vi root**: host half luôn nhận path từ client (client chọn root = workspace). Muốn khóa root deployment-wide, thêm `this.mountRoot` config trong host half và kiểm tra path.
-- **Preview more formats**: mở rộng `isTextable` / thêm render riêng từng định dạng.
-- **Build lại client**: file `lib/client.js` hiện là bundle prebuilt; nếu bạn muốn build từ TSX bằng pipeline của DSH, theo `packages/client/tsdown.client.ts` (`clientBundle(...)`), export `./\client` => `lib/client.js`.
-
-## Bảo mật
-
-- Client chỉ fetch các route `/plugins/file-manager/*` từ origin `/` (cùng web server). Host half trust the same connection fence như GUI.
-- Không intent-safe hóa; plugin chạy với đặc quyền của tiến trình dsh. Chỉ cài trong deployment bạn tin tưởng; expose remote (`--host`) vẫn nên tránh vì RCE surface chung.
+[MIT](LICENSE)
