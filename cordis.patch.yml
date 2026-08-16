@@ -1,0 +1,13 @@
+# dsh-file-manager bundle patch: mounts the file-manager plugin into the
+# host composition of a dsh profile. The host half registers the
+# /plugins/file-manager/* HTTP routes (list / search / read / write / rename /
+# delete / mkdir / touch / open / reveal / open-vscode); the web client
+# (dsh.client entry) renders the right-side resizable file-manager panel in
+# shell.overlay with a right-click context menu on file/folder rows.
+#
+# Install: `dsh plugin --profile <name> add <this package>` (npm or a local
+# path). The `dsh plugin` command pnpm-installs the package into the profile
+# and reconciles it into the profile's `dsh.profile.bundles` layer list.
+- insert:
+    - id: file-manager
+      name: dsh-file-manager

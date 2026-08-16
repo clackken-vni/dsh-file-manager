@@ -1,0 +1,70 @@
+{
+  "name": "dsh-file-manager",
+  "version": "0.1.0",
+  "description": "File Manager for DeepSeek Harness: right-side resizable file tree (expand/collapse, recursive filename search, per-type preview for markdown/html/pdf/image/video/audio/code, in-panel edit) with right-click context menu (preview / edit / copy path / download / multi-select / rename / delete / new file / new folder / open with app / reveal / open in VS Code), 20 color themes, breadcrumb navigation, and rubber-band drag-select.",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": {
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "default": "./lib/client.js"
+    },
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "file-manager",
+    "explorer",
+    "deepseek",
+    "plugin"
+  ],
+  "author": {
+    "name": "Clackken Smith",
+    "url": "http://vnideas.vn"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/clackken-vni/dsh-file-manager.git"
+  },
+  "homepage": "https://github.com/clackken-vni/dsh-file-manager#readme",
+  "engines": {
+    "node": ">=18"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-runtime"
+      ],
+      "platform": "web"
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1-rc.1",
+    "@deepseek-ai/dsh-client-locale": "^0.0.1-rc.1",
+    "@deepseek-ai/dsh-client-runtime": "^0.0.1-rc.1",
+    "@deepseek-ai/dsh-client-ui-slots": "^0.0.1-rc.1",
+    "react": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "~18.3.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "tsdown": "^0.6.0",
+    "typescript": "^5.6.0"
+  }
+}
