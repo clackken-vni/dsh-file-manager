@@ -1,6 +1,6 @@
 {
   "name": "dsh-file-manager",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "File Manager for DeepSeek Harness: right-side resizable file tree (expand/collapse, recursive filename search, per-type preview for markdown/html/pdf/image/video/audio/code, in-panel edit) with right-click context menu (preview / edit / copy path / download / multi-select / rename / delete / new file / new folder / open with app / reveal / open in VS Code), 20 color themes, breadcrumb navigation, and rubber-band drag-select.",
   "type": "module",
   "main": "lib/index.js",
