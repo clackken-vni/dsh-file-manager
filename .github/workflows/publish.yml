@@ -24,10 +24,10 @@ jobs:
         with:
           node-version: 20
           registry-url: https://registry.npmjs.org/
-          cache: pnpm
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile --ignore-scripts
+      # This is a prebuilt package with only peer/dev dependencies, so publishing
+      # needs no dependency install (and several @deepseek-ai/* peers are private,
+      # so an install would fail anyway). We just pack and publish the tarball.
 
       - name: Smoke check
         run: node -e "const p=require('./package.json'); if(!p.name||!p.version) process.exit(1); console.log('name',p.name,'version',p.version)"
@@ -36,4 +36,3 @@ jobs:
         run: pnpm publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_CONFIG_PROVENANCE: 'true'
