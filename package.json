@@ -19,6 +19,7 @@
     "cordis.patch.yml",
     "README.md",
     "README.vi.md",
+    "DSH-PLUGIN-NOTES.md",
     "LICENSE"
   ],
   "keywords": [
